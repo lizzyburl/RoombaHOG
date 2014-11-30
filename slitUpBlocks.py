@@ -21,7 +21,7 @@ def singleCellHistogram(cellOrientationMatrix, cellMagnitudeMatrix):
 				rightBin = 0
 			else:
 				leftBin = np.floor((orientation - 10)/20)
-				rightBin = leftCell + 1
+				rightBin = leftBin + 1
 			leftWeight = (30 - (orientation - leftBin*20))/20
 			rightWeight = 1 - leftWeight
 			bins[leftBin] = bins[leftBin] + leftWeight*cellMagnitudeMatrix[row,col]
@@ -32,7 +32,7 @@ def singleCellHistogram(cellOrientationMatrix, cellMagnitudeMatrix):
 def singleBlockHistogram(cellOrientationMatrix, cellMagnitudeMatrix):
 	row,col = cellOrientationMatrix.shape
 	if (row!=16 or col != 16):
-		raise Excception("Invalid input size")
+		raise Exception("Invalid input size")
 	# Essentially, we want to break this up into 4 8x8 blocks.
 	v = np.concatenate((singleCellHistogram(cellOrientationMatrix[0:8,0:8],cellMagnitudeMatrix[0:8,0:8]), \
 		singleCellHistogram(cellOrientationMatrix[0:8,8:16],cellMagnitudeMatrix[0:8,8:16]), \
@@ -44,7 +44,7 @@ def singleBlockHistogram(cellOrientationMatrix, cellMagnitudeMatrix):
 def overlappingBlocksHistogram(cellOrientationMatrix, cellMagnitudeMatrix):
 	row,col = cellOrientationMatrix.shape
 	if (row!=128 or col != 64):
-		raise Excception("Invalid input size")
+		raise Exception("Invalid input size")
 	# v is giant 3780-D Vector
 	v = np.array([])
 	for row in range (0,15):

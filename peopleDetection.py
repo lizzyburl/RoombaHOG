@@ -5,12 +5,14 @@ import os
 import hogStuff
 import time
 
-def grabCenter(img):
-	#Center is at 320
-	resizeIm = img[1:480, 200:440]
+def grabCenter(indexOfScale, scale, img, totalRows, totalCols):
+	startRow = int(np.floor(indexOfScale/totalCols)*20 + 1)
+	endRow = int(startRow + scale - 1) 
+	startCol = int(np.floor(indexOfScale/totalRows))*20 + 1
+	endCol = int(startCol + scale/2 ) -1
+	print startRow, endRow, startCol, endCol
+	resizeIm = img[startRow:endRow, startCol:endCol]
 	return cv2.resize(resizeIm, (64,128))
-
-
 
 m = svm_load_model('hog_people.model')
 
@@ -31,21 +33,26 @@ while (True):
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
 
-	grayRightSize = grabCenter(gray)
-	cv2.imwrite('grayRightSize.png', gray)
+	scales = [480, 440, 400]
+	i = 0
+	for scale in scales:
+		overlappingRows = (480 - scale)/20 + 1
+		overlappingCols = (640 - scale/2)/20 + 1
 
-	v = hogStuff.getImageVector(grayRightSize)
-	counter = 1
-	output.write("+1 ")
-	for dim in v:
-		if dim != 0:
-			output.write(str(counter) + ":" + str(dim) + " ")
-		counter = counter + 1;
-
+		for j in range(0, overlappingRows*overlappingCols):
+			grayRightSize = grabCenter(j, scale, gray, overlappingRows, overlappingCols)
+			v = hogStuff.getImageVector(grayRightSize)
+			counter = 1
+			output.write("+1 ")
+			for dim in v:
+				if dim != 0:
+					output.write(str(counter) + ":" + str(dim) + " ")
+				counter = counter + 1;
+			output.write("\n")
+			j = j + 1
+		i = i + 1
 	output.close()
 
 	yTest, xTest = svm_read_problem('webcamOuput');
 	p_label, p_acc, p_val = svm_predict(yTest, xTest, m);
-	if p_label > 0:
-		print p_label
-	time.sleep(3)
+	print p_val

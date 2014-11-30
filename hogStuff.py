@@ -26,14 +26,16 @@ def getImageVector(img):
 	#cv2.destroyAllWindows()
 
 	# O(x,y) = tan^-1(gy/gx)
-	orientation = np.arctan2(gy, gx);
-	#cv2.imshow('image', orientation);
-	#cv2.waitKey(0)
-	#cv2.destroyAllWindows()
+	orientation = np.abs(np.arctan2(gy, gx))*180/np.pi;
+	# print orientation
 
-	v = slitUpBlocks.overlappingBlocksHistogram(magnitude, orientation)
 
-	vNorm = np.abs(LA.norm(v));
+	v = slitUpBlocks.overlappingBlocksHistogram(orientation, magnitude)
+	eps = 1.5
+	vNorm = np.sqrt(pow(LA.norm(v),2) + eps)
 	v = v/vNorm
 	return v
 
+
+image = np.double(cv2.imread("testim.png", cv2.CV_LOAD_IMAGE_GRAYSCALE))/255
+v = getImageVector(image)

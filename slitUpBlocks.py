@@ -1,5 +1,5 @@
 import numpy as np
-
+import cv2
 def singleCellHistogram(cellOrientationMatrix, cellMagnitudeMatrix):
 	# The bins are as follows:
 	# [10, 30, 50, 70, 90, 110, 130, 150, 170]
@@ -43,6 +43,7 @@ def singleBlockHistogram(cellOrientationMatrix, cellMagnitudeMatrix):
 # We can assume that we have a 128 x 64 image.
 def overlappingBlocksHistogram(cellOrientationMatrix, cellMagnitudeMatrix):
 	row,col = cellOrientationMatrix.shape
+
 	if (row!=128 or col != 64):
 		raise Exception("Invalid input size")
 	# v is giant 3780-D Vector

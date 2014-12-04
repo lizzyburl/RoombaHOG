@@ -16,7 +16,7 @@ def prepareOutput(outputFileName, positivePath, negativePath):
 	# Go through and mark the positive files for the SVM
 	for filename in os.listdir(positivePath):
 		pathPlusFilename = os.path.join(positivePath,filename)
-		img = cv2.imread(pathPlusFilename, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+		img = np.double(cv2.imread(pathPlusFilename, cv2.CV_LOAD_IMAGE_GRAYSCALE))
 
 		# Get the 3780-d vector that contains the concatenated histograms for each bin
 		v = hog.getImageVector(img)
@@ -33,7 +33,7 @@ def prepareOutput(outputFileName, positivePath, negativePath):
 	print "Done with positive"
 	for filename in os.listdir(negativePath):
 		pathPlusFilename = os.path.join(negativePath,filename)
-		img = cv2.imread(pathPlusFilename, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+		img = np.double(cv2.imread(pathPlusFilename, cv2.CV_LOAD_IMAGE_GRAYSCALE))
 		v = hog.getImageVector(img)
 		counter = 1
 		output.write("-1 ")
@@ -44,14 +44,14 @@ def prepareOutput(outputFileName, positivePath, negativePath):
 		output.write("\n")
 	output.close()
 	print "Done with negative"
-prepareOutput('hogTrainingHistSmallern2', "C:\\Users\\Lizzy\\Documents\\ComputerVision\\FinalProject\\smallerPed", "C:\\Users\\Lizzy\\Documents\\ComputerVision\\FinalProject\\smallerNotPed")
-#prepareOutput("hogTestingHistSmallern2", "C:\\Users\\Lizzy\\Documents\\ComputerVision\\FinalProject\\testPeople", "C:\\Users\\Lizzy\\Documents\\ComputerVision\\FinalProject\\testNotPed")
+#prepareOutput('hogTraining', "C:\\Users\\Lizzy\\Documents\\ComputerVision\\FinalProject\\smallerPed", "C:\\Users\\Lizzy\\Documents\\ComputerVision\\FinalProject\\smallerNotPed")
+#prepareOutput("hogTesting", "C:\\Users\\Lizzy\\Documents\\ComputerVision\\FinalProject\\testPeople", "C:\\Users\\Lizzy\\Documents\\ComputerVision\\FinalProject\\testNotPed")
 
-y, x = svm_read_problem('hogTrainingHistSmallern2');
+y, x = svm_read_problem('hogTraining');
 m = svm_train(y, x, '-t 0 -s 0');
-svm_save_model('hog_people_hist_smaller_norm_2x.model', m)
+svm_save_model('hog_people.model', m)
 
-#yTest, xTest = svm_read_problem('hogTrainingHistSmallern2');
+yTest, xTest = svm_read_problem('hogTesting');
 
-#p_label, p_acc, p_val = svm_predict(yTest, xTest, m);
+p_label, p_acc, p_val = svm_predict(yTest, xTest, m);
 #print p_val

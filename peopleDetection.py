@@ -9,27 +9,29 @@ import roomba
 # Takes a window of which to look for a person and resizes it to fit the 64x128 size
 def grabImage(img, startRow, startCol, endRow, endCol):
 	resizeIm = img[startRow:endRow, startCol:endCol]
+	#cv2.imshow("resizeIm", resizeIm)
+	#cv2.waitKey(0)
 	return cv2.resize(resizeIm, (64,128))
 
 offset = 20
 #roombaBot = roomba.Roomba()
 
 # Load the SVM model that was pre-computed
-m = svm_load_model('hog_people_hist_smaller_norm_2x.model')
+m = svm_load_model('hog_people.model')
 
 # Open up the webcam
 cap = cv2.VideoCapture(1)
-
+num =0
 # Give me time to run in front of the camera to test it
-time.sleep(5)
+time.sleep(.5)
 while (True):
 	startTime = time.time()
 	# Capture frame-by-frame
 	ret, frame = cap.read()
 
-	output = open('webcamOuput', 'wb')
-	#gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	gray = cv2.imread('XXXrefactored1.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
+	#gTemp = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	cv2.imwrite("tempFrame.png", frame)
+	gray = np.double(cv2.imread('tempFrame.png', cv2.CV_LOAD_IMAGE_GRAYSCALE))/255
 	# Display the resulting frame
 	cv2.imshow('frame',gray)
 	cv2.waitKey(1)
@@ -76,19 +78,14 @@ while (True):
 
 			# Just set the "true" label. As I mentioned, this doesn't really matter.
 			y.append(1)
-			output.write("+1 ")
 			# Create the dictionary for x
 			for dim in v:
 				if dim != 0:
-					output.write(str(counter) + ":" + str(dim)+ " ")
 					dictionary[counter] = dim
 				counter = counter + 1;
 			x.append(dictionary)
-			output.write("\n")
 			i = i + 1
 
-	output.close()
-	yTest, xTest = svm_read_problem('webcamOuput')
 	p_label, p_acc, p_val = svm_predict(y, x, m);
 
 	# p_val will be a greater positive number if there is a person and a lower negative number
@@ -104,7 +101,7 @@ while (True):
 	for i in range(0, len(scales)):
 		if maxIndex >= scaleIndices[i]:
 			chosenScale = i
-			break
+			
 
 	# Print the index it was in that scale, for debugging purposes
 	print scaleIndices
@@ -117,15 +114,15 @@ while (True):
 
 	# Redoing the math we did before to find the square with the best fit.
 	overlappingCols = (640 - scale/2)/offset + 1
-	startRow = int(np.floor(j/overlappingCols)*offset + 1)
+	startRow = int(np.floor(scaleIndex/overlappingCols)*offset + 1)
 	endRow = int(startRow + scale - 1) 
-	startCol = int(j - np.floor(j/overlappingCols)*overlappingCols)*offset + 1
+	startCol = int(scaleIndex - np.floor(scaleIndex/overlappingCols)*overlappingCols)*offset + 1
 	endCol = int(startCol + scale/2 ) -1
 	print startRow, endRow, startCol, endCol
-	resizeIm = gray[startRow:endRow, startCol:endCol]
-	if p_val[int(maxIndex)][0] > .70:
-		cv2.imwrite('bestim.png',resizeIm)
-
+	cv2.rectangle(gray, (startCol, startRow), (endCol, endRow), (57,173,52))
+	cv2.imshow('closestThingToPerson', gray)
+	if p_val[int(maxIndex)][0] > 0:
+		cv2.imwrite(('person'+str(num)+'prob'+str(p_val[int(maxIndex)][0])+'.png'),gray*255)
 		print "We are pretty sure there is a person"
 		# Time to move the roomba! 
 		# If the person is on the left, turn left
@@ -154,9 +151,9 @@ while (True):
 		# roombaBot.turn_left_in_place();
 		# time.sleep(4);
 		# roombaBot.stop();
-		cv2.imwrite('badim.png',resizeIm)
+		cv2.imwrite('notPerson'+str(num)+'prob'+str(p_val[int(maxIndex)][0])+'.png',gray*255)
 		print "No person here!"
 	endTime = time.time() - startTime
 	print "Time Elapsed: " + str(endTime)
-
+	num = num + 1
 

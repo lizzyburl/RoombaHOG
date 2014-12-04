@@ -1,12 +1,11 @@
 import numpy as np
 import cv2
 import hogOrientationBinning
-from numpy import linalg as LA
 
-# Gets the HOG image vector
+# Gets the HOG descriptor vector
+# Parameters:
+#	img: The 64x128 image that we want to get the HOG descriptor for.
 def getImageVector(img):
-	height, width = img.shape
-
 	# Run each image through the mask in the x and y direction
 	# filter2d [-1 0 1]
 	kern = np.matrix([-1, 0, 1]);
@@ -20,11 +19,8 @@ def getImageVector(img):
 	magnitude = np.sqrt(np.multiply(gx,gx) + np.multiply(gy,gy));
 
 	# O(x,y) = tan^-1(gy/gx)
-	orientation = np.abs(np.arctan2(gy, gx))*180/np.pi;
-	# print orientation
+	# We want to convert this to degrees in the range [0,180)
+	orientation = ((np.arctan2(gy, gx)*180/np.pi)+180)%180;
 
-	v = hogOrientationBinning.overlappingBlocksHistogram(orientation, magnitude)
-	eps = 1.5
-	vNorm = np.sqrt(pow(LA.norm(v),2) + eps)
-	v = v/vNorm
-	return v
+	return hogOrientationBinning.overlappingBlocksHistogram(orientation, magnitude)
+	
